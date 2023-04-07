@@ -394,6 +394,9 @@ cd $PACKAGES/ffmpeg-5.0.1/ || exit
     --extra-cflags="-I$WORKSPACE/include" \
     --extra-ldflags="-L$WORKSPACE/lib" \
     --extra-libs="-lpthread -lm" \
+  --enable-cuda \
+  --enable-cuvid \
+  --enable-nvenc \
 	--enable-static \
 	--disable-debug \
 	--disable-shared \

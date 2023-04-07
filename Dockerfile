@@ -1,5 +1,4 @@
-ARG BASE_IMAGE
-FROM ${BASE_IMAGE:-balenalib/raspberry-pi-debian:stretch}
+FROM nvidia/cuda:12.1.0-base-ubuntu22.04 AS nvidia-base
 
 COPY qemu /usr/bin/
 
@@ -13,3 +12,5 @@ VOLUME /build
 WORKDIR /build
 
 CMD /build-ffmpeg --build
+
+ENTRYPOINT ["ffmpeg"]
