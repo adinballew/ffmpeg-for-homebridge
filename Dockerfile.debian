@@ -1,9 +1,15 @@
-ARG BASE_IMAGE
-FROM nvidia/cuda:11.4.0-devel-ubuntu20.04 AS nvidia_base
+FROM nvidia/cuda:12.1.0-devel-ubuntu20.04
 
 COPY qemu /usr/bin/
 
-RUN apt-get update && apt-get install -y build-essential curl g++ autoconf
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y build-essential curl g++ git autoconf nvidia-driver-460 nvidia-cuda-toolkit
+
+RUN mkdir $HOME/nv-codec-headers_build && cd $HOME/nv-codec-headers_build \
+&& git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git \
+&& cd nv-codec-headers \
+&& make && sudo make install
 
 COPY build-ffmpeg /
 
