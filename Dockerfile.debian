@@ -1,5 +1,5 @@
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE:-balenalib/raspberry-pi-debian:stretch}
+FROM nvidia/cuda:11.4.0-devel-ubuntu20.04 AS nvidia_base
 
 COPY qemu /usr/bin/
 
