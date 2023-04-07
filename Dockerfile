@@ -13,4 +13,6 @@ WORKDIR /build
 
 CMD /build-ffmpeg --build
 
+ENV PATH=/usr/local/bin:$PATH
+
 ENTRYPOINT ["ffmpeg"]
