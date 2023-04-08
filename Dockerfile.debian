@@ -1,21 +1,214 @@
 FROM nvidia/cuda:12.1.0-devel-ubuntu20.04
 
+LABEL description="FFmpeg GPU Container"
+
+ARG FFMPEG_VERSION="5.0.1"
+ENV FFMPEG_VERSION="${FFMPEG_VERSION}"
+
 COPY qemu /usr/bin/
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y build-essential curl g++ git autoconf nvidia-driver-460 nvidia-cuda-toolkit
+# Start as root
+USER root
+
+# Update packages
+RUN apt-get update --fix-missing \
+    && apt-get -y upgrade \
+    && apt-get -y dist-upgrade
+
+RUN apt-get install -y build-essential curl g++ git autoconf nvidia-driver-460 nvidia-cuda-toolkit
+
+RUN apt-get -y install \
+    cleancss \
+    doxygen \
+    debhelper-compat \
+    flite1-dev \
+    frei0r-plugins-dev \
+    lame \
+    libaom-dev \
+    ladspa-sdk \
+    libaribb24-dev \
+    libass-dev \
+    libbluray-dev \
+    libbs2b-dev \
+    libbz2-dev \
+    libcaca-dev \
+    libcdio-paranoia-dev \
+    libchromaprint-dev \
+    libcodec2-dev \
+    libdc1394-22-dev \
+    libdrm-dev \
+    libfdk-aac-dev \
+    libffmpeg-nvenc-dev \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libfribidi-dev \
+    libgl1-mesa-dev \
+    libgme-dev \
+    libgnutls28-dev \
+    libgsm1-dev \
+    libiec61883-dev \
+    libavc1394-dev \
+    libjack-jackd2-dev \
+    liblensfun-dev \
+    liblilv-dev \
+    liblzma-dev \
+    libmp3lame-dev \
+    libmysofa-dev \
+    libnvidia-compute-470-server \
+    libnvidia-decode-470-server \
+    libnvidia-encode-470-server \
+    libopenal-dev \
+    libomxil-bellagio-dev \
+    libopencore-amrnb-dev \
+    libopencore-amrwb-dev \
+    libopenjp2-7-dev \
+    libopenmpt-dev \
+    libopus-dev \
+    libpulse-dev \
+    librubberband-dev \
+    librsvg2-dev \
+    libsctp-dev \
+    libsdl2-dev \
+    libshine-dev \
+    libsnappy-dev \
+    libsoxr-dev \
+    libspeex-dev \
+    libssh-gcrypt-dev \
+    libtesseract-dev \
+    libtheora-dev \
+    libtwolame-dev \
+    libva-dev \
+    libvdpau-dev \
+    libvidstab-dev \
+    libvo-amrwbenc-dev \
+    libvorbis-dev \
+    libvpx-dev \
+    libwavpack-dev \
+    libwebp-dev \
+    libx264-dev \
+    libx265-dev \
+    libxcb-shape0-dev \
+    libxcb-shm0-dev \
+    libxcb-xfixes0-dev \
+    libxml2-dev \
+    libxv-dev \
+    libxvidcore-dev \
+    libxvmc-dev \
+    libzmq3-dev \
+    libzvbi-dev \
+    nasm \
+    node-less \
+    ocl-icd-opencl-dev \
+    openssl \
+    opus-tools \
+    pkg-config \
+    texinfo \
+    tree \
+    wget \
+    yasm \
+    zlib1g-dev \
+    libssl-dev \
+    libasound2 \
+    libfdk-aac-dev \
+    libvorbis-dev \
+    libogg-dev \
+    libopus0 \
+    libnuma-dev
+
+RUN ldconfig
+
+# Set the PKG_CONFIG_PATH environment variable to include the aom library
+ENV PKG_CONFIG_PATH="/usr/lib/arm-linux-gnueabihf/pkgconfig/:/usr/local/lib/pkgconfig/"
+
+RUN wget -O ${HOME}/ffmpeg-${FFMPEG_VERSION}.tar.gz https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz \
+    && tar -xvf ${HOME}/ffmpeg-${FFMPEG_VERSION}.tar.gz \
+    && cd ffmpeg-${FFMPEG_VERSION} \
+    && ./configure --prefix=/usr/local/ffmpeg-nvidia \
+        --pkg-config="pkg-config --static" \
+        --extra-cflags=-I/usr/local/include \
+        --extra-ldflags=-L/usr/local/lib \
+        --extra-libs="-lpthread -lm -lz" \
+        --toolchain=hardened \
+        --disable-stripping \
+        --disable-filter=resample \
+        --enable-cuvid \
+        --enable-ladspa \
+        --enable-libass \
+        --enable-libbluray \
+        --enable-libbs2b \
+        --enable-libcaca \
+        --enable-libcdio \
+        --enable-libcodec2 \
+        --enable-libflite \
+        --enable-libfontconfig \
+        --enable-libfreetype \
+        --enable-libfribidi \
+        --enable-libgme \
+        --enable-libgsm \
+        --enable-libjack \
+        --enable-libmysofa \
+        --enable-libnpp \
+        --enable-libopenjpeg \
+        --enable-libopenmpt \
+        --enable-libpulse \
+        --enable-librsvg \
+        --enable-librubberband \
+        --enable-libshine \
+        --enable-libsnappy \
+        --enable-libsoxr \
+        --enable-libssh \
+        --enable-libtwolame \
+        --enable-libvidstab \
+        --enable-libwebp \
+        --enable-libx265 \
+        --enable-libxml2 \
+        --enable-libxvid \
+        --enable-libzmq \
+        --enable-libzvbi \
+        --enable-lv2 \
+        --enable-nvenc \
+        --enable-omx \
+        --enable-openal \
+        --enable-opencl \
+        --enable-opengl \
+        --enable-sdl2 \
+        --enable-static \
+        --disable-debug \
+        --disable-shared \
+        --disable-ffplay \
+        --disable-doc \
+        --enable-openssl \
+        --enable-gpl \
+        --enable-version3 \
+        --enable-nonfree \
+        --enable-pthreads \
+        --enable-libvpx \
+        --enable-libmp3lame \
+        --enable-libopus \
+        --enable-libtheora \
+        --enable-libvorbis \
+        --enable-libx264 \
+        --enable-runtime-cpudetect \
+        --enable-libfdk-aac \
+        --enable-avfilter \
+        --enable-libopencore_amrwb \
+        --enable-libopencore_amrnb \
+        --enable-filters \
+        --enable-decoder=h264 \
+        --enable-network \
+        --enable-protocol=tcp \
+        --enable-libspeex \
+        --enable-demuxer=rtsp \
+    && make -j 8
+
+RUN cd ffmpeg-${FFMPEG_VERSION} \
+    && make install
+
+RUN echo 'PATH="/usr/local/ffmpeg-nvidia/bin:$PATH"' >> ${HOME}/.bashrc
 
 RUN mkdir $HOME/nv-codec-headers_build && cd $HOME/nv-codec-headers_build \
 && git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git \
 && cd nv-codec-headers \
 && make && sudo make install
-
-COPY build-ffmpeg /
-
-ENV SKIPINSTALL=yes VERBOSE=yes
-
-VOLUME /build
-WORKDIR /build
-
-CMD /build-ffmpeg --build

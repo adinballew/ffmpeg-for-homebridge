@@ -15,11 +15,7 @@ jobs:
           raspbian-armv6l,
           debian-x86_64,
           debian-armv7l,
-          debian-aarch64,
-          alpine-x86_64,
-          alpine-armv6l,
-          alpine-aarch64,
-          darwin-x86_64
+          debian-aarch64
         ]
         include:
           - name: raspbian-armv6l
@@ -42,23 +38,6 @@ jobs:
             BASE_IMAGE: arm64v8/debian:stretch
             DOCKERFILE: Dockerfile.debian
             TARGET_OS: debian
-          - name: alpine-x86_64
-            os: ubuntu-latest
-            BASE_IMAGE: library/alpine:3.11.3
-            DOCKERFILE: Dockerfile.alpine
-            TARGET_OS: alpine
-          - name: alpine-armv6l
-            os: ubuntu-latest
-            BASE_IMAGE: arm32v6/alpine:3.11.3
-            DOCKERFILE: Dockerfile.alpine
-            TARGET_OS: alpine
-          - name: alpine-aarch64
-            os: ubuntu-latest
-            BASE_IMAGE: arm64v8/alpine:3.11.3
-            DOCKERFILE: Dockerfile.alpine
-            TARGET_OS: alpine
-          - name: darwin-x86_64
-            os: macOS-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -91,12 +70,6 @@ jobs:
         sudo chown -R $USER:$USER build
 
     # macOS Build
-    - name: macOS - Build static ffmpeg binary
-      if: runner.os == 'macOS'
-      run: |
-        mkdir -p build
-        cd build && SKIPINSTALL=yes VERBOSE=yes ../build-ffmpeg --build
-
     - name: Prepare Asset
       run: |
         mkdir -p package/usr/local/bin/
