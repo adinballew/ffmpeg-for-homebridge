@@ -12,30 +12,11 @@ jobs:
     strategy:
       matrix:
         name: [
-          raspbian-armv6l,
-          debian-x86_64,
-          debian-armv7l,
-          debian-aarch64
+          debian-x86_64
         ]
         include:
-          - name: raspbian-armv6l
-            os: ubuntu-latest
-            BASE_IMAGE: balenalib/raspberry-pi-debian:stretch
-            DOCKERFILE: Dockerfile.debian
-            TARGET_OS: raspbian
           - name: debian-x86_64
             os: ubuntu-latest
-            BASE_IMAGE: library/debian:stretch
-            DOCKERFILE: Dockerfile.debian
-            TARGET_OS: debian
-          - name: debian-armv7l
-            os: ubuntu-latest
-            BASE_IMAGE: arm32v7/debian:stretch
-            DOCKERFILE: Dockerfile.debian
-            TARGET_OS: debian
-          - name: debian-aarch64
-            os: ubuntu-latest
-            BASE_IMAGE: arm64v8/debian:stretch
             DOCKERFILE: Dockerfile.debian
             TARGET_OS: debian
 
@@ -68,19 +49,6 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo chown -R $USER:$USER build
-
-    # macOS Build
-    - name: Prepare Asset
-      run: |
-        mkdir -p package/usr/local/bin/
-        cp build/workspace/bin/ffmpeg package/usr/local/bin/ffmpeg
-        tar -C package -zcvf ffmpeg-${{ matrix.name }}.tar.gz .
-
-    - name: Upload Asset
-      uses: actions/upload-artifact@v3
-      with:
-        name: ffmpeg-${{ matrix.name }}
-        path: ffmpeg-${{ matrix.name }}.tar.gz
 
   publish:
     needs: build
